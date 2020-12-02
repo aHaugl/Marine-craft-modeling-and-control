@@ -44,6 +44,11 @@ z = 4                              # Number of blades
 delta_max = 40 * np.pi/180
 Ddelta_max = 5 * np.pi/180
 
+# Rudder coefficients (Section 9.5 Fossen2021)
+b = 2
+AR = 8
+CB = 0.8
+
 # Added mass matrix about CO
 Xudot = -8.9830e5
 Yvdot = -5.1996e6
@@ -67,6 +72,17 @@ MRB = np.array([
 #Total inertia mass matrix inverted:
 Minv = la.inv(MRB + MA)
 
+# Linear damping matrix (only valid for zero speed)
+T1 = 20
+T2 = 20
+T6 = 10
+
+Xu = -(m - Xudot) / T1
+Yv = -(m - Yvdot) / T2
+Nr = -(Iz - Nrdot) / T6
+D = np.diag([-Xu, -Yv, -Nr])
+
+
 # %% Environmental disturbance models
 # The model for current and wind is implemented here
 
@@ -81,8 +97,9 @@ nu_c = np.transpose(
 
 # %% Wind expressed in NED
 Wv = 0                          # Wind speed (m/s)
-betaWv = deg2rad(135)           # Wind direction (rad)
+betaWv = np.deg2rad(135)           # Wind direction (rad)
 rho_a = 1.247                   # Air density at 10 deg celsius
 cy = 0.95                       # wind coefficient in sway
 cn = 0.15                       # wind coefficient in yaw
 A_lw = 10 * L                   # projected lateral area of ownship
+
